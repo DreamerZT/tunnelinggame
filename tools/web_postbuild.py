@@ -18,13 +18,13 @@ def patch_index_html(index_path: Path) -> None:
     html = index_path.read_text(encoding="utf-8")
 
     # Make pygame-web runtime fully local (no external CDN)
-    # Original: https://pygame-web.github.io/archives/0.9/...
-    html = html.replace(
-        "https://pygame-web.github.io/archives/0.9/",
-        "./archives/0.9/",
-    )
-    # Some templates contain double slashes
-    html = html.replace("./archives/0.9//", "./archives/0.9/")
+    # - Script src/prefetch are under /archives/0.9/
+    # - BUT config.cdn must be the site root ("./"), because the runtime imports "./vt/xterm.js"
+    #   relative to the runtime folder already. If cdn is "./archives/0.9/", it becomes
+    #   "/archives/0.9/archives/0.9/..." and fails to load.
+    html = html.replace("https://pygame-web.github.io/archives/0.9/", "./archives/0.9/")
+    html = html.replace("./archives/0.9//", "./archives/0.9/")  # Some templates contain double slashes
+    html = html.replace('cdn : "./archives/0.9/",', 'cdn : "./",')
 
     # Hide debug UI by default (keep it lightweight for internal sharing)
     # - xtermjs: console UI
