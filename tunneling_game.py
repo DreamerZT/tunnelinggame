@@ -689,6 +689,16 @@ class Game:
                                 self.floors[test_floor]['holes'].append((self.player.x - 10, self.player.x + self.player.width + 10))
                 
                 elif self.game_state == "name_input":
+                    # ESC: 이름 등록 취소(팝업 닫기)
+                    if event.key == pygame.K_ESCAPE:
+                        self.player_name = ""
+                        self.is_new_record = False
+                        # 클리어 성공 여부 체크 (50층 도달)
+                        if self.player.current_floor >= TOTAL_FLOORS - 1:
+                            self.game_state = "clear"
+                        else:
+                            self.game_state = "gameover"
+                        continue
                     if event.key == pygame.K_RETURN and len(self.player_name) > 0:
                         self.add_ranking(self.player_name, self.player.current_floor, self.final_time / 1000)
                         # 클리어 성공 여부 체크 (50층 도달)
@@ -1052,7 +1062,8 @@ class Game:
             pygame.draw.line(overlay, BG_DARKER + (alpha,), (0, y), (SCREEN_WIDTH, y))
         self.screen.blit(overlay, (0, 0))
         
-        card_rect = pygame.Rect(SCREEN_WIDTH // 2 - 280, SCREEN_HEIGHT // 2 - 180, 560, 360)
+        # ESC 안내 문구까지 테두리(카드) 안에 들어오도록 카드 높이를 확대
+        card_rect = pygame.Rect(SCREEN_WIDTH // 2 - 280, SCREEN_HEIGHT // 2 - 200, 560, 400)
         shadow_surf = pygame.Surface((card_rect.width, card_rect.height), pygame.SRCALPHA)
         shadow_surf.fill((0, 0, 0, 120))
         self.screen.blit(shadow_surf, (card_rect.x + 10, card_rect.y + 10))
@@ -1065,7 +1076,7 @@ class Game:
         self.screen.blit(glow_surf, (SCREEN_WIDTH // 2 - glow_size, SCREEN_HEIGHT // 2 - 140 - glow_size // 2))
         
         congrats_text = self.font_large.render("🏆 신기록! 🏆", True, WARNING)
-        congrats_rect = congrats_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 120))
+        congrats_rect = congrats_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 140))
         self.screen.blit(congrats_text, congrats_rect)
         
         # 도착한 층 표시
@@ -1078,8 +1089,8 @@ class Game:
         floor_color = (255, 192, 203) if floor_num >= TOTAL_FLOORS - 1 else INFO
         floor_text = self.font_medium.render(floor_str, True, floor_color)
         
-        floor_label_rect = floor_label.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60))
-        floor_rect = floor_text.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 30))
+        floor_label_rect = floor_label.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 80))
+        floor_rect = floor_text.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
         
         self.screen.blit(floor_label, floor_label_rect)
         self.screen.blit(floor_text, floor_rect)
@@ -1089,30 +1100,34 @@ class Game:
         time_label = self.font_small.render("플레이 타임", True, TEXT_MUTED)
         time_text = self.font_medium.render(time_display, True, PRIMARY)
         
-        time_label_rect = time_label.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 60))
-        time_rect = time_text.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 30))
+        time_label_rect = time_label.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 80))
+        time_rect = time_text.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
         
         self.screen.blit(time_label, time_label_rect)
         self.screen.blit(time_text, time_rect)
         
-        pygame.draw.line(self.screen, CARD_BORDER, (SCREEN_WIDTH // 2 - 230, SCREEN_HEIGHT // 2 + 5), (SCREEN_WIDTH // 2 + 230, SCREEN_HEIGHT // 2 + 5), 2)
+        pygame.draw.line(self.screen, CARD_BORDER, (SCREEN_WIDTH // 2 - 230, SCREEN_HEIGHT // 2 - 15), (SCREEN_WIDTH // 2 + 230, SCREEN_HEIGHT // 2 - 15), 2)
         
         prompt_text = self.font_small.render("명예의 전당에 새길 이름 (최대 10글자)", True, TEXT_SECONDARY)
-        prompt_rect = prompt_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 35))
+        prompt_rect = prompt_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20))
         self.screen.blit(prompt_text, prompt_rect)
         
-        input_box = pygame.Rect(SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT // 2 + 70, 360, 60)
+        input_box = pygame.Rect(SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT // 2 + 55, 360, 60)
         draw_rounded_rect(self.screen, BG_DARK, input_box, 12, 3, PRIMARY)
         
         cursor_blink = (pygame.time.get_ticks() // 500) % 2
         display_name = self.player_name + ("_" if cursor_blink else "")
         name_text = self.font_medium.render(display_name, True, TEXT_PRIMARY)
-        name_rect = name_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
+        name_rect = name_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 85))
         self.screen.blit(name_text, name_rect)
         
         confirm_text = self.font_small.render("Enter 키를 눌러 등록", True, SUCCESS)
-        confirm_rect = confirm_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 150))
+        confirm_rect = confirm_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 135))
         self.screen.blit(confirm_text, confirm_rect)
+
+        skip_text = self.font_small.render("ESC 키로 건너뛰기", True, TEXT_MUTED)
+        skip_rect = skip_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 165))
+        self.screen.blit(skip_text, skip_rect)
     
     def draw_clear(self):
         """클리어 화면"""
