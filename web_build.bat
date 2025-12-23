@@ -6,6 +6,10 @@ echo [1/2] (필요 시) pygbag 설치/업데이트...
 python -m pip install -r requirements.txt
 
 echo.
+echo [0/2] 한글 폰트 준비(최초 1회 다운로드)...
+python tools\fetch_font.py
+
+echo.
 echo [2/2] 웹(브라우저) 빌드 생성 중...
 REM pygbag 옵션은 반드시 파일 경로 뒤가 아니라 앞에 와야 합니다.
 python -m pygbag --build tunneling_game.py

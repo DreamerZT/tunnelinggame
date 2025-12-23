@@ -5,6 +5,11 @@ import json
 import os
 from datetime import timedelta
 
+# 한글 폰트(웹/배포 포함) 경로
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+KOREAN_FONT_PATH = os.path.join(BASE_DIR, "fonts", "NotoSansKR.ttf")
+_FONT_CACHE = {}
+
 # 실행 환경 플래그
 # - 웹(브라우저) 빌드: pygbag/emscripten 환경에서 sys.platform == "emscripten"
 IS_WEB_BUILD = (sys.platform == "emscripten")
@@ -20,6 +25,27 @@ try:
 except Exception:
     # 웹 빌드/일부 환경에서는 오디오 초기화가 실패할 수 있음 (게임 진행에는 영향 없음)
     pass
+
+
+def get_game_font(size: int) -> pygame.font.Font:
+    """게임 공통 폰트 로더 (한글 지원)."""
+    key = ("kr", size)
+    if key in _FONT_CACHE:
+        return _FONT_CACHE[key]
+
+    # 1) 프로젝트에 포함된 오픈소스 한글 폰트 우선
+    if os.path.exists(KOREAN_FONT_PATH):
+        font = pygame.font.Font(KOREAN_FONT_PATH, size)
+    else:
+        # 2) 로컬 실행 시 시스템 폰트(맑은 고딕 등) 시도
+        try:
+            font = pygame.font.SysFont("malgungothic", size)
+        except Exception:
+            # 3) 최후의 fallback (영문 위주)
+            font = pygame.font.Font(None, size)
+
+    _FONT_CACHE[key] = font
+    return font
 
 # 게임 설정
 SCREEN_WIDTH = 800
@@ -488,18 +514,12 @@ class Game:
         self.is_new_record = False
         self.rankings = self.load_rankings()
         
-        try:
-            self.font_large = pygame.font.SysFont('malgungothic', 60)
-            self.font_medium = pygame.font.SysFont('malgungothic', 32)
-            self.font_small = pygame.font.SysFont('malgungothic', 24)
-            self.font_tiny = pygame.font.SysFont('malgungothic', 20)
-            self.font_micro = pygame.font.SysFont('malgungothic', 16)
-        except:
-            self.font_large = pygame.font.Font(None, 60)
-            self.font_medium = pygame.font.Font(None, 32)
-            self.font_small = pygame.font.Font(None, 24)
-            self.font_tiny = pygame.font.Font(None, 20)
-            self.font_micro = pygame.font.Font(None, 16)
+        # 폰트: 웹/배포에서도 한글이 깨지지 않도록 프로젝트 포함 폰트를 우선 사용
+        self.font_large = get_game_font(60)
+        self.font_medium = get_game_font(32)
+        self.font_small = get_game_font(24)
+        self.font_tiny = get_game_font(20)
+        self.font_micro = get_game_font(16)
         
         self.player = Player(SCREEN_WIDTH // 2 - PLAYER_SIZE // 2, 10)
         self.floors = self.init_floors()
