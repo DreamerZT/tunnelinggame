@@ -50,6 +50,13 @@ def main() -> None:
     # Vendor cached pygame-web runtime into build/web/archives/0.9/...
     copytree_overwrite(cache, local_archives)
 
+    # Some templates prefetch "pythonrc.py" (not "cpythonrc.py").
+    # Provide a compatibility copy so the prefetch doesn't 404.
+    cpythonrc = local_archives / "cpythonrc.py"
+    pythonrc = local_archives / "pythonrc.py"
+    if cpythonrc.exists() and not pythonrc.exists():
+        shutil.copy2(cpythonrc, pythonrc)
+
     # Patch build/web/index.html to use local runtime
     patch_index_html(build_web / "index.html")
 
