@@ -19,12 +19,15 @@ def patch_index_html(index_path: Path) -> None:
 
     # Make pygame-web runtime fully local (no external CDN)
     # - Script src/prefetch are under /archives/0.9/
-    # - BUT config.cdn must be the site root ("./"), because the runtime imports "./vt/xterm.js"
-    #   relative to the runtime folder already. If cdn is "./archives/0.9/", it becomes
-    #   "/archives/0.9/archives/0.9/..." and fails to load.
-    html = html.replace("https://pygame-web.github.io/archives/0.9/", "./archives/0.9/")
-    html = html.replace("./archives/0.9//", "./archives/0.9/")  # Some templates contain double slashes
-    html = html.replace('cdn : "./archives/0.9/",', 'cdn : "./",')
+    # - IMPORTANT: config.cdn is used inside ES modules (e.g. pythons.js via import()).
+    #   If we set a relative cdn like "./archives/0.9/", it gets resolved relative to the
+    #   importing module URL (already /archives/0.9/...), resulting in double paths:
+    #   "/archives/0.9/archives/0.9/...".
+    #   Therefore, we must use an absolute path from site root: "/archives/0.9/".
+    html = html.replace("https://pygame-web.github.io/archives/0.9/", "/archives/0.9/")
+    html = html.replace("/archives/0.9//", "/archives/0.9/")  # Some templates contain double slashes
+    html = html.replace('cdn : "./archives/0.9/",', 'cdn : "/archives/0.9/",')
+    html = html.replace('cdn : "./",', 'cdn : "/archives/0.9/",')
 
     # Avoid "MEDIA USER ACTION REQUIRED" by disabling sound in the runtime config.
     # - Remove 'snd' from data-os (pygame-web modules)
