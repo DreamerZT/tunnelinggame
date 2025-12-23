@@ -23,6 +23,7 @@ dist/
 build/
 
 # BUT: keep web build artefacts for Vercel static hosting
+!build/
 !build/web/
 !build/web/**
 
