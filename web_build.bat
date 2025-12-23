@@ -11,6 +11,10 @@ REM pygbag 옵션은 반드시 파일 경로 뒤가 아니라 앞에 와야 합�
 python -m pygbag --build tunneling_game.py
 
 echo.
+echo [추가] 배포 안정화를 위해 런타임을 로컬로 포함(vendor)합니다...
+python tools\web_postbuild.py
+
+echo.
 echo [추가] 로컬 실행 스크립트를 build\web 에 복사합니다...
 if not exist "build\web" (
   echo ❌ build\web 폴더가 없습니다. 빌드가 실패했을 수 있습니다.
