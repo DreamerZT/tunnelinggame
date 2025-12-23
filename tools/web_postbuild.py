@@ -26,11 +26,9 @@ def patch_index_html(index_path: Path) -> None:
     html = html.replace("./archives/0.9//", "./archives/0.9/")  # Some templates contain double slashes
     html = html.replace('cdn : "./archives/0.9/",', 'cdn : "./",')
 
-    # Hide debug UI by default (keep it lightweight for internal sharing)
-    # - xtermjs: console UI
-    # - gui_debug: debug widgets
-    html = html.replace("xtermjs : \"1\" ,", "xtermjs : \"0\" ,")
-    html = html.replace("gui_debug : 3,", "gui_debug : 0,")
+    # NOTE: Do NOT hide debug UI here.
+    # Some environments fail to load certain assets; keeping the default console/debug
+    # makes it much easier to diagnose issues (shows "Downloading..." and errors).
 
     index_path.write_text(html, encoding="utf-8")
 
